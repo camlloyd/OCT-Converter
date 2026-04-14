@@ -1,5 +1,7 @@
 from construct import (
     Array,
+    Bytes,
+    ExprAdapter,
     Float32l,
     Float64l,
     Int8un,
@@ -11,6 +13,16 @@ from construct import (
     Struct,
     this,
 )
+
+
+# PaddedString only supports ASCII; Latin-1 is needed for names with ä, ö, å etc.
+def Latin1String(n):
+    return ExprAdapter(
+        Bytes(n),
+        lambda obj, _: obj.rstrip(b"\x00").decode("latin-1"),
+        lambda obj, _: obj.encode("latin-1").ljust(n, b"\x00")[:n],
+    )
+
 
 # Mostly based on description of .e2e file format here:
 #         https://bitbucket.org/uocte/uocte/wiki/Heidelberg%20File%20Format.
@@ -71,12 +83,12 @@ image_structure = Struct(
     "width" / Int32un,
 )
 patient_id_structure = Struct(
-    "first_name" / PaddedString(31, "ascii"),
-    "surname" / PaddedString(51, "ascii"),
-    "title" / PaddedString(15, "ascii"),
+    "first_name" / Latin1String(31),
+    "surname" / Latin1String(51),
+    "title" / Latin1String(15),
     "birthdate" / Int32un,
     "sex" / PaddedString(1, "ascii"),
-    "patient_id" / PaddedString(25, "ascii"),
+    "patient_id" / Latin1String(25),
 )
 lat_structure = Struct(
     "unknown" / Array(14, Int8un),
