@@ -120,6 +120,17 @@ def populate_opt_series(ds: Dataset, meta: DicomMetadata) -> Dataset:
     # ])
     ds.StudyInstanceUID = generate_uid()
     ds.SeriesInstanceUID = generate_uid()
+    ds.StudyID = meta.series_info.study_id
+    ds.StudyDate = (
+        meta.series_info.acquisition_date.strftime("%Y%m%d")
+        if meta.series_info.acquisition_date
+        else ""
+    )
+    ds.StudyTime = (
+        meta.series_info.acquisition_date.strftime("%H%M%S.%f")
+        if meta.series_info.acquisition_date
+        else ""
+    )
     ds.Laterality = meta.series_info.laterality
     ds.ProtocolName = meta.series_info.protocol
     ds.SeriesDescription = meta.series_info.description
